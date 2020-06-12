@@ -12,13 +12,18 @@ import {
 import Constants from "expo-constants";
 import { Feather as Icon } from "@expo/vector-icons";
 
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 import MapView, { Marker } from "react-native-maps";
 import { SvgUri } from "react-native-svg";
 import * as Location from "expo-location";
 
 import api from "../../services/api";
+
+interface Params {
+  city: string;
+  uf: string;
+}
 
 interface Item {
   id: number;
@@ -36,6 +41,9 @@ interface Point {
 
 const Points = () => {
   const navigation = useNavigation();
+
+  const route = useRoute();
+  const routeParams = route.params as Params;
 
   const [items, setItems] = useState<Item[]>([]);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
@@ -77,15 +85,15 @@ const Points = () => {
     api
       .get("points", {
         params: {
-          city: "João Pessoa",
-          uf: "PB",
-          items: [1, 2, 3, 4, 5, 6],
+          city: routeParams.city,
+          uf: routeParams.uf,
+          items: selectedItems,
         },
       })
       .then((response) => {
         setPoints(response.data);
       });
-  }, []);
+  }, [selectedItems]);
 
   function handleNavigationBack() {
     navigation.navigate("Home");
@@ -116,6 +124,7 @@ const Points = () => {
         <Text style={styles.description}>
           Encontre no mapa um ponto de coleta
         </Text>
+
         <View style={styles.mapContainer}>
           {initialPosition[0] !== 0 && (
             <MapView
